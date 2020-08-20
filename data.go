@@ -1,6 +1,6 @@
 package backend_errors
 
-type badInput struct {
+type BadInput struct {
 	Fields []field `json:"fields"`
 }
 
