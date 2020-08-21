@@ -5,7 +5,13 @@
 //
 package backend_errors
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+
+	"github.com/gofiber/fiber"
+)
 
 // BadInputsJSON creates the error JSON using the struct BadInput.
 // The key of the map given correspond to the Name and the value to the Reason.
@@ -26,7 +32,7 @@ func BadInputsJSON(fields map[string]string) []byte {
 // BadInputJSON is simply a call to BadInputsJSON to create a single bad input error.
 // It returns the JSON of the struct BadInput in []byte.
 func BadInputJSON(name string, reason string) []byte {
-	return BadInputsJSON(map[string]string{ name: reason })
+	return BadInputsJSON(map[string]string{name: reason})
 }
 
 // BadInputsJSONFromType create a BadInput JSON from a key and a value corresponding to an ErrorType.
@@ -43,5 +49,11 @@ func BadInputsJSONFromType(fields map[string]string) []byte {
 // BadInputJSONFromType is simply a call to BadInputsJSONFromType to create a single bad input error.
 // It returns the JSON of the struct BadInput in []byte.
 func BadInputJSONFromType(name string, errorType string) []byte {
-	return BadInputsJSONFromType(map[string]string{ name: errorType })
+	return BadInputsJSONFromType(map[string]string{name: errorType})
+}
+
+// InternalServerError set a 500 http error and log the error.
+func InternalServerError(ctx *fiber.Ctx, err error) {
+	ctx.SendStatus(http.StatusInternalServerError)
+	log.Println(err)
 }

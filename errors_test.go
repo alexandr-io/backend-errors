@@ -3,7 +3,12 @@ package backend_errors
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"testing"
+
+	"github.com/gofiber/fiber"
+	"github.com/valyala/fasthttp"
 )
 
 func TestBadInputsJSON(t *testing.T) {
@@ -81,5 +86,14 @@ func TestBadInputJSONFromType(t *testing.T) {
 	data := BadInputJSONFromType("username", string(Required))
 	if bytes.Compare(data, dataExpectedValue) != 0 {
 		t.Errorf("BadInputsJSON return value should be equal to:\n%s\ngot:\n%s\n", dataExpectedValue, data)
+	}
+}
+
+func TestInternalServerError(t *testing.T) {
+	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
+	InternalServerError(&ctx, errors.New("test error"))
+
+	if ctx.Fasthttp.Response.Header.StatusCode() != http.StatusInternalServerError {
+		t.Errorf("Http error should be: %d\ngot: %d\n", http.StatusBadRequest, ctx.Fasthttp.Response.Header.StatusCode())
 	}
 }

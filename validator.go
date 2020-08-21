@@ -21,10 +21,12 @@ func GetJSONFieldName(object interface{}, fieldName string) (string, error) {
 	}
 	tags, err := structtag.Parse(string(field.Tag))
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 	jsonTag, err := tags.Get("json")
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 
@@ -46,12 +48,12 @@ func ParseBodyJSON(ctx *fiber.Ctx, object interface{}) bool {
 
 	v := validator.New()
 	if err := v.Struct(object); err != nil {
+		log.Println(err)
 		errorMap := make(map[string]string)
 		for _, e := range err.(validator.ValidationErrors) {
 			jsonTagName, err := GetJSONFieldName(object, e.Field())
 			if err != nil {
-				ctx.SendStatus(http.StatusInternalServerError)
-				log.Println(err)
+				InternalServerError(ctx, err)
 				return false
 			}
 			errorMap[jsonTagName] = e.Tag()
