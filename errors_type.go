@@ -11,5 +11,5 @@ const (
 var ErrorTypes = map[ErrorType]string{
 	Email:    "The email given is not correct",
 	Required: "The field is required",
-	Login:    "The login is incorrect",
+	Login:    "The login and password does not match",
 }
