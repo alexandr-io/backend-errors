@@ -3,7 +3,7 @@
 // backend-errors is a package developed and used by alexandrio.
 // It is made so that every micro service can use the same errors methods.
 //
-package backend_errors
+package berrors
 
 import (
 	"encoding/json"

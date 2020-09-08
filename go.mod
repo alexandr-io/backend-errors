@@ -1,5 +1,4 @@
-module github.com/alexandr-io/backend_errors
-
+module github.com/alexandr-io/berrors
 go 1.15
 
 require (
