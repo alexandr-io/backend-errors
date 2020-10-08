@@ -1,11 +1,11 @@
 package berrors
 
 import (
+	"github.com/valyala/fasthttp"
 	"net/http"
 	"testing"
 
-	"github.com/gofiber/fiber"
-	"github.com/valyala/fasthttp"
+	"github.com/gofiber/fiber/v2"
 )
 
 type testStruct struct {
@@ -48,10 +48,13 @@ func TestParseBodyJSONCorrectData(t *testing.T) {
 		Name:  "John Doe",
 		Email: "test@test.com",
 	}
-	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
-	ctx.Fasthttp.Request.Header.SetContentType("application/json")
-	ctx.Fasthttp.Request.SetBodyString("{\"name\":\"John Doe\",\"email\":\"test@test.com\"}")
-	ok := ParseBodyJSON(&ctx, testData)
+
+	fiberApp := fiber.New()
+	ctx := fiberApp.AcquireCtx(&fasthttp.RequestCtx{})
+
+	ctx.Context().Request.Header.SetContentType("application/json")
+	ctx.Context().Request.SetBodyString("{\"name\":\"John Doe\",\"email\":\"test@test.com\"}")
+	ok := ParseBodyJSON(ctx, testData)
 	if !ok {
 		t.Errorf("ParseBodyJSON should return true. Got: %t\n", ok)
 	}
@@ -64,16 +67,18 @@ func TestParseBodyJSONMissingRequiredData(t *testing.T) {
 	testData := new(testStruct)
 
 	expectedError := "{\"fields\":[{\"name\":\"name\",\"reason\":\"The field is required\"}]}"
-	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
-	ctx.Fasthttp.Request.Header.SetContentType("application/json")
-	ctx.Fasthttp.Request.SetBodyString("{\"email\":\"test@test.com\"}")
-	ok := ParseBodyJSON(&ctx, testData)
+
+	fiberApp := fiber.New()
+	ctx := fiberApp.AcquireCtx(&fasthttp.RequestCtx{})
+	ctx.Context().Request.Header.SetContentType("application/json")
+	ctx.Context().Request.SetBodyString("{\"email\":\"test@test.com\"}")
+	ok := ParseBodyJSON(ctx, testData)
 	if ok {
 		t.Errorf("ParseBodyJSON should return false. Got: %t\n", ok)
 	}
-	if ctx.Fasthttp.Response.Header.StatusCode() != http.StatusBadRequest ||
-		string(ctx.Fasthttp.Response.Body()) != expectedError {
-		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Fasthttp.Response.Header.StatusCode(), string(ctx.Fasthttp.Response.Body()))
+	if ctx.Context().Response.Header.StatusCode() != http.StatusBadRequest ||
+		string(ctx.Context().Response.Body()) != expectedError {
+		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Context().Response.Header.StatusCode(), string(ctx.Context().Response.Body()))
 	}
 }
 
@@ -81,32 +86,34 @@ func TestParseBodyJSONIncorrectEmail(t *testing.T) {
 	testData := new(testStruct)
 
 	expectedError := "{\"fields\":[{\"name\":\"email\",\"reason\":\"The email given is not correct\"}]}"
-	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
-	ctx.Fasthttp.Request.Header.SetContentType("application/json")
-	ctx.Fasthttp.Request.SetBodyString("{\"name\":\"John Doe\",\"email\":\"test.com\"}")
-	ok := ParseBodyJSON(&ctx, testData)
+	fiberApp := fiber.New()
+	ctx := fiberApp.AcquireCtx(&fasthttp.RequestCtx{})
+	ctx.Context().Request.Header.SetContentType("application/json")
+	ctx.Context().Request.SetBodyString("{\"name\":\"John Doe\",\"email\":\"test.com\"}")
+	ok := ParseBodyJSON(ctx, testData)
 	if ok {
 		t.Errorf("ParseBodyJSON should return false. Got: %t\n", ok)
 	}
-	if ctx.Fasthttp.Response.Header.StatusCode() != http.StatusBadRequest ||
-		string(ctx.Fasthttp.Response.Body()) != expectedError {
-		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Fasthttp.Response.Header.StatusCode(), string(ctx.Fasthttp.Response.Body()))
+	if ctx.Context().Response.Header.StatusCode() != http.StatusBadRequest ||
+		string(ctx.Context().Response.Body()) != expectedError {
+		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Context().Response.Header.StatusCode(), string(ctx.Context().Response.Body()))
 	}
 }
 
 func TestParseBodyJSONIncorrectJSON(t *testing.T) {
 	testData := new(testStruct)
 
-	expectedError := "json: cannot unmarshal number into Go struct field testStruct.name of type string"
-	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
-	ctx.Fasthttp.Request.Header.SetContentType("application/json")
-	ctx.Fasthttp.Request.SetBodyString("{\"name\":2,\"email\":\"test@test.com\"}")
-	ok := ParseBodyJSON(&ctx, testData)
+	expectedError := "json: cannot unmarshal \"2,\\\"email\\\":\\\"test@test.com\\\"}\" into Go struct field berrors.testStruct.name. of type string"
+	fiberApp := fiber.New()
+	ctx := fiberApp.AcquireCtx(&fasthttp.RequestCtx{})
+	ctx.Context().Request.Header.SetContentType("application/json")
+	ctx.Context().Request.SetBodyString("{\"name\":2,\"email\":\"test@test.com\"}")
+	ok := ParseBodyJSON(ctx, testData)
 	if ok {
 		t.Errorf("ParseBodyJSON should return false. Got: %t\n", ok)
 	}
-	if ctx.Fasthttp.Response.Header.StatusCode() != http.StatusBadRequest ||
-		string(ctx.Fasthttp.Response.Body()) != expectedError {
-		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Fasthttp.Response.Header.StatusCode(), string(ctx.Fasthttp.Response.Body()))
+	if ctx.Context().Response.Header.StatusCode() != http.StatusBadRequest ||
+		string(ctx.Context().Response.Body()) != expectedError {
+		t.Errorf("Http error should be:\n%d: %s\ngot:\n%d: %s\n", http.StatusBadRequest, expectedError, ctx.Context().Response.Header.StatusCode(), string(ctx.Context().Response.Body()))
 	}
 }

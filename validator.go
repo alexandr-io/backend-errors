@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/structtag"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 
 	"gopkg.in/go-playground/validator.v9"
 )
@@ -41,7 +41,7 @@ func GetJSONFieldName(object interface{}, fieldName string) (string, error) {
 // The validator errors messages are using BadInputsJSONFromType
 func ParseBodyJSON(ctx *fiber.Ctx, object interface{}) bool {
 	if err := ctx.BodyParser(object); err != nil {
-		ctx.Status(http.StatusBadRequest).Send(err)
+		_ = ctx.Status(http.StatusBadRequest).SendString(err.Error())
 		log.Println(err)
 		return false
 	}
@@ -58,7 +58,7 @@ func ParseBodyJSON(ctx *fiber.Ctx, object interface{}) bool {
 			}
 			errorMap[jsonTagName] = e.Tag()
 		}
-		ctx.Status(http.StatusBadRequest).Send(BadInputsJSONFromType(errorMap))
+		_ = ctx.Status(http.StatusBadRequest).Send(BadInputsJSONFromType(errorMap))
 		return false
 	}
 	return true

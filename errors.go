@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 // BadInputsJSON creates the error JSON using the struct BadInput.
@@ -54,6 +54,6 @@ func BadInputJSONFromType(name string, errorType string) []byte {
 
 // InternalServerError set a 500 http error and log the error.
 func InternalServerError(ctx *fiber.Ctx, err error) {
-	ctx.SendStatus(http.StatusInternalServerError)
+	_ = ctx.SendStatus(http.StatusInternalServerError)
 	log.Println(err)
 }

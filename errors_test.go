@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/valyala/fasthttp"
 	"net/http"
 	"testing"
 
-	"github.com/gofiber/fiber"
-	"github.com/valyala/fasthttp"
+	"github.com/gofiber/fiber/v2"
 )
 
 func TestBadInputsJSON(t *testing.T) {
@@ -90,10 +90,11 @@ func TestBadInputJSONFromType(t *testing.T) {
 }
 
 func TestInternalServerError(t *testing.T) {
-	ctx := fiber.Ctx{Fasthttp: &fasthttp.RequestCtx{}}
-	InternalServerError(&ctx, errors.New("test error"))
+	fiberApp := fiber.New()
+	ctx := fiberApp.AcquireCtx(&fasthttp.RequestCtx{})
+	InternalServerError(ctx, errors.New("test error"))
 
-	if ctx.Fasthttp.Response.Header.StatusCode() != http.StatusInternalServerError {
-		t.Errorf("Http error should be: %d\ngot: %d\n", http.StatusBadRequest, ctx.Fasthttp.Response.Header.StatusCode())
+	if ctx.Context().Response.Header.StatusCode() != http.StatusInternalServerError {
+		t.Errorf("Http error should be: %d\ngot: %d\n", http.StatusBadRequest, ctx.Context().Response.Header.StatusCode())
 	}
 }
